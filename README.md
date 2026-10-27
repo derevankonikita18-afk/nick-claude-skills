@@ -1,110 +1,63 @@
-# n8n Self-Hosting Skill
+# nick-claude-skills — прокачка Claude
 
-Expert guidance for a coding agent to deploy a **production self-hosted n8n** end-to-end onto a
-fresh Linux VM — Docker Compose behind a **Caddy** reverse proxy with automatic HTTPS — in
-either **single/regular mode** or **queue mode** (main + Redis + Postgres + workers), plus the
-essential Day-2 operations (update, back up, restore).
+Набор навыков (skills) для Claude под работу Ника: недвижимость Пхукета, таблицы, Telegram-боты, n8n и сервер.
+Это **маркетплейс плагинов**: один раз подключаешь репозиторий в Claude, дальше ставишь и обновляешь ветки навыков как в игре.
 
-This is the one **deployment/ops** skill in the pack. The other skills are about *building*
-workflows through the n8n-mcp MCP server; this one is about *standing up the server* they run on.
-It does not touch the workflow-building router or hooks — it triggers on its own description when
-someone wants to self-host n8n.
+👉 Прогресс и дерево навыков — в [LEVELS.md](LEVELS.md).
 
----
+## Зачем
 
-## What it does
+- Claude сразу знает твои таблицы, проекты и порядок работы — меньше разведки, меньше потраченных лимитов.
+- Навык загружается в работу только когда нужен: в обычном диалоге он стоит ~100 токенов (одна строка описания).
+- Новые навыки Claude находит и добавляет сам по команде «Прокачай ветку …».
 
-Takes a bare Ubuntu/Debian box with SSH access to a running, TLS-secured n8n:
+## Что внутри
 
-1. **Asks single vs queue first** (the architectures differ).
-2. Collects inputs — domain, TLS email, timezone, SSH target.
-3. Preflights DNS + ports (the #1 cause of "it won't get a cert").
-4. Installs Docker, lays down the project, **generates fresh secrets on the box**.
-5. Brings the stack up behind Caddy and verifies the cert + reachability.
-6. Hands off with update/backup/restore guidance.
-
-It is opinionated toward **secure defaults that exceed a naive install**: the encryption key is
-set explicitly (not auto-generated), internal ports (5678/5432/6379) are never published,
-telemetry is off, Code-node `process.env` access is blocked, and execution data is pruned.
-
----
-
-## Two modes
-
-| | Single / regular | Queue |
+| Плагин | Ветка | Навыки |
 |---|---|---|
-| Processes | one n8n | main + N workers |
-| Services | n8n + Caddy (SQLite) | n8n + workers + Redis + Postgres + Caddy |
-| Executes | in the main process | on workers, in parallel |
-| For | one user, light/moderate load | high volume, horizontal scale |
+| `lvl1-core` | Основа | ekonom · nick-workspace · skill-scout |
+| `lvl2-realestate` | Недвижимость | phuket-developer-db · property-analysis · listing-writer · thai-property-rules |
+| `lvl2-bots` | Боты и автоматизация | telegram-bot · vps-deploy · n8n-quickstart · n8n-self-hosting |
+| `n8n-skills` | 🔒 n8n PRO (уровень 3) | официальные навыки n8n — ставить, когда n8n работает на сервере |
 
----
+## Как залить на GitHub (один раз)
 
-## Skill Activation
+**Вариант А — через Claude Code на Mac (проще всего).**
+1. Создай аккаунт на github.com.
+2. Распакуй архив в папку, например `~/nick-claude-skills`.
+3. Открой Claude Code в этой папке и напиши: «Залей эту папку в новый публичный репозиторий nick-claude-skills на моём GitHub». Он установит `gh`, попросит войти в GitHub через браузер и всё отправит.
 
-Activates when the user wants to:
-- Self-host / install / deploy / provision n8n on their own server, VPS, or VM
-- Set up n8n with Docker Compose, a reverse proxy, or SSL/HTTPS
-- Run n8n in queue mode / with workers / scale n8n
-- Update, back up, restore, or harden a self-hosted n8n
-- Make Python Code nodes work on self-hosted n8n (task runners in external mode)
+**Вариант Б — через сайт GitHub.**
+1. github.com → New repository → имя `nick-claude-skills` → Public → Create.
+2. «uploading an existing file» → перетащи **всё содержимое** папки.
+   ⚠️ Папки `.claude-plugin` на Mac скрыты: в Finder нажми `Cmd + Shift + .`, чтобы их увидеть, и перетащи вместе с остальными.
+3. Commit changes.
 
-**Not** for n8n Cloud, and not for building workflows (that's the rest of the pack).
+Секретов в репозитории нет, поэтому его можно держать публичным — так проще подключать.
 
-**Example queries**:
-- "Deploy n8n to my fresh Hetzner box at n8n.mycompany.com, queue mode."
-- "Install self-hosted n8n with Docker and HTTPS on this Ubuntu server."
-- "Set up n8n with workers so it can handle a lot of executions."
-- "How do I back up and update my self-hosted n8n?"
-- "My Python Code node says 'Python runner unavailable: Python 3 is missing from this system'."
+## Как подключить к Claude
 
----
+**Claude Code (терминал):**
+```
+/plugin marketplace add derevankonikita18-afk/nick-claude-skills
+/plugin install lvl1-core@nick-skills
+/plugin install lvl2-realestate@nick-skills
+/plugin install lvl2-bots@nick-skills
+```
 
-## File Structure
+**Claude (приложение / Cowork):** в разделе плагинов добавь маркетплейс по адресу `derevankonikita18-afk/nick-claude-skills` и установи нужные плагины.
 
-### SKILL.md
-The end-to-end orchestrator: mode selection, secret-hygiene rules, inputs, the numbered deploy
-flow, verification, and "what not to do."
+Обновление после прокачки: `/plugin marketplace update nick-skills` (или «обновить» у маркетплейса в приложении).
 
-### Reference files
-- **SINGLE_MODE.md** — single-instance specifics, SQLite vs Postgres, when/how to graduate to queue.
-- **QUEUE_MODE.md** — queue architecture, worker scaling/concurrency, the shared encryption key, binary data (`database` mode; Enterprise S3/Azure), webhook processors, multi-main licensing.
-- **SECURITY.md** — secret generation, the encryption-key rules, and the full hardening checklist.
-- **TASK_RUNNERS.md** — task runners in external mode: the `n8nio/runners` sidecar that Python Code nodes need, one sidecar per queue worker, module allowlists (`/etc/n8n-task-runners.json`), verification and failure signatures.
-- **DAY2.md** — updating the image, backing up (key + volume + Postgres), and restoring.
+## Как прокачивать
 
-### assets/
-Secret-free templates the agent copies to the box:
-- `docker-compose.single.yml`, `docker-compose.queue.yml`
-- `Caddyfile` (domain-free; driven by `.env`)
-- `.env.single.example`, `.env.queue.example` (placeholder values only)
-- `init-data.sh` (Postgres non-root user bootstrap for queue mode)
+Просто скажи Claude:
+- «Прокачай ветку YouTube» — найдёт, проверит и добавит навыки, обновит LEVELS.md;
+- «Найди навык для монтажа видео»;
+- «Навык phuket-developer-db устарел — в таблице новая колонка, обнови».
 
----
+Без доступа к GitHub Claude отдаст изменённые файлы архивом — их нужно загрузить в репозиторий так же, как в первый раз.
 
-## Security posture
+## Источники
 
-Every shipped file is **secret-free and domain-free**. Real secrets only ever exist in a `.env`
-on the target box (mode 600), referenced as `${VAR}`. The skill instructs the agent to generate
-fresh secrets per box, never reuse an encryption key or `.env` across instances, redact values
-when inspecting, and keep internal services off the public interface.
-
----
-
-## Version
-
-**Version**: 1.2.0 — task runners in external mode (`TASK_RUNNERS.md`), verified on a live n8n 2.38.5 box: the
-`n8nio/runners` sidecar that Python Code nodes need, one sidecar per queue worker, Python/JS module
-allowlists via the launcher config, and upgrading n8n and the runners together.
-Previously 1.1.0 — realigned with the restructured official hosting docs
-([docs.n8n.io/deploy/host-n8n](https://docs.n8n.io/deploy/host-n8n)): queue-mode binary data
-moved to `database` mode (filesystem is unsupported in queue mode), SSRF protection, encryption-key
-rotation, task-runner isolation modes, owner pre-provisioning, CLI backup/export, and monitoring
-endpoints, with deep links to the docs for the uncommon paths.
-**Compatibility**: Docker Engine + Compose v2 on a Debian/Ubuntu host; n8n official image
-(`docker.n8n.io/n8nio/n8n`); Caddy 2 for automatic TLS.
-
----
-
-**Remember**: pick the mode first, preflight DNS + ports, generate fresh secrets on the box, and
-back up the encryption key off-box — a database without its key is undecryptable.
+См. [CREDITS.md](CREDITS.md).

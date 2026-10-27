@@ -1,0 +1,37 @@
+{
+  "name": "nick-skills",
+  "owner": { "name": "Nick" },
+  "metadata": {
+    "description": "Прокачка Claude под работу Ника: недвижимость Пхукета, таблицы, Telegram-боты, n8n и VPS. Навыки разложены по уровням — см. LEVELS.md.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "lvl1-core",
+      "source": "./plugins/lvl1-core",
+      "description": "Уровень 1 · Основа: экономный режим, карта рабочих инструментов Ника, поиск и добавление новых навыков.",
+      "version": "1.0.0",
+      "category": "productivity"
+    },
+    {
+      "name": "lvl2-realestate",
+      "source": "./plugins/lvl2-realestate",
+      "description": "Уровень 2 · Недвижимость: база застройщиков Пхукета, анализ юнитов и доходности, описания объектов, правила покупки для иностранцев.",
+      "version": "1.0.0",
+      "category": "real-estate"
+    },
+    {
+      "name": "lvl2-bots",
+      "source": "./plugins/lvl2-bots",
+      "description": "Уровень 2 · Боты и автоматизация: Telegram-боты и автоответчик, VPS, n8n — быстрый старт и установка на свой сервер.",
+      "version": "1.0.0",
+      "category": "automation"
+    },
+    {
+      "name": "n8n-skills",
+      "source": { "source": "github", "repo": "n8n-io/skills" },
+      "description": "Уровень 3 · n8n PRO (официальные навыки от n8n). Ставить, когда n8n уже работает на сервере: при установке попросит адрес твоего n8n.",
+      "category": "automation"
+    }
+  ]
+}
